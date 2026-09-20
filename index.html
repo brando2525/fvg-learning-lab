@@ -1,34 +1,133 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>FVG Learning Lab V6</title>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07090d">
+<title>FVG Learning Lab V7 Pro</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#080d18;color:#e9eef7;font:14px system-ui,-apple-system,Segoe UI,sans-serif}header{padding:15px 18px;border-bottom:1px solid #202a3d;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}h1{margin:0;font-size:20px}.muted{color:#8d99ad}.live{color:#45dfa9;font-weight:700}main{display:grid;grid-template-columns:260px minmax(0,1fr) 340px;gap:12px;padding:12px}.card{background:#101727;border:1px solid #202a3d;border-radius:11px;padding:12px}.lesson{padding:10px;border:1px solid #2a3650;border-radius:8px;margin:7px 0;cursor:pointer}.lesson.active{background:#243452}.lesson.done{border-left:4px solid #42dfa8}.controls{display:flex;gap:7px;flex-wrap:wrap}select,button,input{background:#151f32;color:#e9eef7;border:1px solid #303d56;border-radius:7px;padding:8px 10px}button{cursor:pointer}.chart{height:520px;padding:0;overflow:hidden}canvas{width:100%;height:100%}.box{background:#151f32;border-radius:8px;padding:10px;margin:8px 0;line-height:1.5}.pill{font-size:11px;background:#202b40;border-radius:99px;padding:3px 7px}.good{color:#46dda8}.warn{color:#f0bf55}.bad{color:#ff7b89}.progress{height:7px;background:#1b263a;border-radius:9px;overflow:hidden}.progress>div{height:100%;background:#43dfa9;width:0}ul{padding-left:20px} @media(max-width:1100px){main{grid-template-columns:220px minmax(0,1fr)}}@media(max-width:800px){main{grid-template-columns:1fr}.chart{height:430px}}
-</style></head><body>
-<header><div><h1>FVG Learning Lab V6</h1><div class="muted">Guided course + live examples + replay · <span id="status" class="live">LOADING…</span></div></div>
-<div class="controls"><select id="symbol"><option value="btcusdt">BTC/USDT</option><option value="ethusdt">ETH/USDT</option><option value="solusdt">SOL/USDT</option></select><select id="tf"><option>1m</option><option selected>5m</option><option>15m</option><option>1h</option></select><button onclick="load()">Refresh</button></div></header>
-<main>
-<aside class="card"><h3 style="margin-top:0">FVG Course</h3><div id="lessons"></div><div class="box"><b>Course progress</b><div class="progress"><div id="bar"></div></div><div id="prog" class="muted" style="margin-top:5px">0 / 6</div></div></aside>
-<section><div class="card"><div class="muted" id="lessonNo">Lesson 1</div><h2 id="title">What is a Fair Value Gap?</h2><div id="content"></div></div><div class="card chart" style="margin-top:9px"><canvas id="chart"></canvas></div><div class="card" style="margin-top:9px"><div class="controls"><button onclick="previous()">◀ Previous</button><button onclick="next()">Next lesson ▶</button><button onclick="showExample()">Show me one</button></div><div id="lessonAction" class="box">Complete the lesson, then test yourself.</div></div></section>
-<aside class="card"><h3 style="margin-top:0">Live setup examples</h3><div class="muted">These are educational examples, not trade recommendations.</div><div id="setups"></div><hr style="border:0;border-top:1px solid #202a3d"><h3>FVG checklist</h3><div class="box">☐ Three-candle imbalance<br>☐ Fresh / unmitigated<br>☐ Displacement<br>☐ Liquidity context<br>☐ Structure context<br>☐ Higher-timeframe context<br>☐ Defined invalidation</div><div class="box"><b>Remember</b><br>An FVG is a pattern to study, not proof that price must return or react.</div></aside>
+:root{--bg:#07090d;--panel:#0e1219;--panel2:#111722;--line:#202938;--text:#f4f7fb;--muted:#8f9aad;--green:#26d69a;--red:#ff5d73;--amber:#ffbd4a;--blue:#57a7ff;--purple:#a77bff}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#07090d,#090d13);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}
+button,input,select,textarea{font:inherit}button{cursor:pointer}.wrap{max-width:1180px;margin:auto;padding:18px}
+.top{position:sticky;top:0;z-index:10;background:rgba(7,9,13,.9);backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}
+.nav{display:flex;align-items:center;gap:10px;overflow:auto;padding:10px 18px}.brand{font-weight:900;letter-spacing:-.5px;font-size:19px;margin-right:auto;white-space:nowrap}.brand span{color:var(--blue)}
+.nav button{background:transparent;color:var(--muted);border:0;padding:10px 12px;border-radius:12px;font-weight:700}.nav button.active{background:#17202d;color:#fff}
+h1{font-size:clamp(28px,6vw,48px);line-height:1;margin:10px 0}.sub{color:var(--muted);max-width:720px}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 12px 35px #0004}.span12{grid-column:span 12}.span8{grid-column:span 8}.span7{grid-column:span 7}.span6{grid-column:span 6}.span5{grid-column:span 5}.span4{grid-column:span 4}.span3{grid-column:span 3}
+@media(max-width:800px){.span8,.span7,.span6,.span5,.span4,.span3{grid-column:span 12}.wrap{padding:12px}}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.pill{border:1px solid var(--line);background:#0b1017;color:#c9d2df;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:800}.pill.live{color:#08120f;background:#27d69a}.pill.warn{color:#201707;background:#ffbd4a}
+.assets{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}.asset{background:#0a0f16;border:1px solid var(--line);border-radius:14px;padding:12px;text-align:left;color:#fff}.asset.active{border-color:var(--blue);box-shadow:0 0 0 1px #57a7ff44 inset}.asset b{display:block;font-size:16px}.asset small{color:var(--muted)}
+@media(max-width:650px){.assets{grid-template-columns:repeat(2,1fr)}}
+.tv{height:560px;border-radius:16px;overflow:hidden;border:1px solid var(--line);background:#0b0f15}.tv iframe{width:100%;height:100%;border:0}
+.controls{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.controls select,.controls input,.controls textarea{background:#0a0f16;color:#fff;border:1px solid var(--line);border-radius:10px;padding:10px}.controls textarea{width:100%;min-height:130px;font-family:ui-monospace,monospace;font-size:12px}
+.btn{border:1px solid var(--line);background:#141b26;color:#fff;border-radius:10px;padding:10px 13px;font-weight:800}.btn.primary{background:#2b80ff;border-color:#2b80ff}.btn.green{background:#18b97f;border-color:#18b97f;color:#06110d}.btn.red{background:#7d2638;border-color:#9f3148}.btn.ghost{background:transparent}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}.kpi{background:#0a0f16;border:1px solid var(--line);border-radius:13px;padding:12px}.kpi small{color:var(--muted);display:block}.kpi b{font-size:22px}.setup{border:1px solid var(--line);background:#0a0f16;border-radius:14px;padding:13px;margin-top:10px}.setup .score{font-size:24px;font-weight:900}.bar{height:8px;border-radius:99px;background:#1a2230;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,#ff5d73,#ffbd4a,#26d69a)}
+.check{display:flex;gap:9px;align-items:flex-start;padding:9px 0;border-bottom:1px solid #17202b}.check input{margin-top:4px;accent-color:var(--green)}
+canvas{width:100%;height:390px;background:#080c12;border-radius:14px;border:1px solid var(--line)}
+.tab{display:none}.tab.active{display:block}.muted{color:var(--muted)}.green{color:var(--green)}.red{color:var(--red)}.amber{color:var(--amber)}.blue{color:var(--blue)}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:9px;border-bottom:1px solid var(--line)}th{color:var(--muted)}
+.note{padding:12px;border-left:3px solid var(--amber);background:#151208;border-radius:8px;color:#d9d0bc;font-size:13px}.footer{color:#687386;font-size:12px;padding:30px 0 50px}
+</style>
+</head>
+<body>
+<header class="top"><nav class="nav">
+<div class="brand">FVG <span>LEARNING LAB</span> V7 PRO</div>
+<button class="active" data-tab="dashboard">Dashboard</button><button data-tab="engine">FVG Engine</button><button data-tab="replay">Replay</button><button data-tab="journal">Journal</button><button data-tab="course">Course</button>
+</nav></header>
+
+<main class="wrap">
+<section id="dashboard" class="tab active">
+<div class="row"><div><h1>Trade the setup. Learn the process.</h1><p class="sub">A personal FVG workstation built around the four markets you actually watch: MNQ, ES, NQ and XAUUSD.</p></div><span class="pill live">LIVE CHARTS</span></div>
+<div class="card span12" style="margin-top:14px">
+<h3 style="margin-top:0">Your markets</h3>
+<div class="assets" id="assets"></div>
+<div class="controls"><select id="tf"><option>1</option><option>5</option><option selected>15</option><option>30</option><option>60</option><option>D</option></select><button class="btn primary" id="openChart">Open selected chart</button><span class="pill">FVG focus: 3-candle imbalance</span></div>
+<div class="tv" id="tv"></div>
+</div>
+<div class="grid" style="margin-top:14px">
+<div class="card span8"><h3>Setup Radar</h3><div class="kpis"><div class="kpi"><small>Fresh FVGs</small><b id="radarFvg">—</b></div><div class="kpi"><small>Confluence</small><b id="radarScore">—</b></div><div class="kpi"><small>Structure</small><b id="radarBos">—</b></div><div class="kpi"><small>Liquidity</small><b id="radarLiq">—</b></div></div><div id="setups"></div></div>
+<div class="card span4"><h3>Risk Guard</h3><div class="controls"><input id="acct" type="number" placeholder="Account size" value="10000"><input id="risk" type="number" step=".1" placeholder="Risk %" value="0.5"></div><div class="kpi"><small>Risk amount</small><b id="riskAmt">$50.00</b></div><p class="muted">Use this as a planning tool. Position sizing depends on your contract, stop distance and broker specifications.</p><div class="note">No setup is a trade by itself. The lab is designed to make you follow the same checklist every time.</div></div>
+</div>
+</section>
+
+<section id="engine" class="tab">
+<h1>FVG Engine</h1><p class="sub">Import real OHLC candles from a CSV and the engine will identify bullish/bearish FVGs, displacement, basic structure breaks and liquidity sweeps.</p>
+<div class="card">
+<div class="row"><button class="btn primary" id="demoData">Load training candles</button><button class="btn" id="scan">Scan candles</button><button class="btn" id="clearData">Clear</button><span class="pill warn">Training mode is clearly labelled</span></div>
+<textarea id="csv" placeholder="Paste CSV with columns: time,open,high,low,close,volume"></textarea>
+<div id="engineStatus" class="muted">No candle data loaded.</div>
+</div>
+<div class="grid" style="margin-top:14px">
+<div class="card span8"><h3>Price + FVG map</h3><canvas id="chart" width="1100" height="500"></canvas></div>
+<div class="card span4"><h3>Detected setups</h3><div id="engineSetups"></div></div>
+</div>
+</section>
+
+<section id="replay" class="tab">
+<h1>Replay Lab</h1><p class="sub">Hide the future, make your decision, then reveal what happened. This is the practice mode for building execution discipline.</p>
+<div class="card"><div class="row"><button class="btn primary" id="startReplay">Start replay</button><button class="btn" id="nextCandle">Next candle</button><button class="btn" id="reveal">Reveal future</button><span id="replayState" class="pill">Ready</span></div><canvas id="replayChart" width="1100" height="500"></canvas><div class="controls"><select id="decision"><option>No trade</option><option>Long</option><option>Short</option></select><input id="entry" placeholder="Entry"><input id="sl" placeholder="Stop"><input id="tp" placeholder="Target"><button class="btn green" id="grade">Grade decision</button></div><div id="gradeResult"></div></div>
+</section>
+
+<section id="journal" class="tab">
+<h1>Trade Journal</h1><p class="sub">Your journal stays on this device. Track the process, not just the outcome.</p>
+<div class="card"><div class="controls"><input id="jSymbol" placeholder="Symbol e.g. NQ1!"><input id="jTf" placeholder="TF e.g. 5m"><input id="jSide" placeholder="Long/Short"><input id="jR" type="number" step=".1" placeholder="R result"><button class="btn primary" id="addJournal">Add trade</button></div><textarea id="jNote" placeholder="What was the FVG? What swept? What confirmed/rejected the idea?"></textarea></div>
+<div class="card" style="margin-top:14px"><table><thead><tr><th>Date</th><th>Market</th><th>TF</th><th>Side</th><th>R</th><th>Notes</th></tr></thead><tbody id="journalRows"></tbody></table></div>
+</section>
+
+<section id="course" class="tab">
+<h1>FVG Mastery Path</h1><p class="sub">A six-step learning path that turns the scanner into a teaching tool.</p>
+<div id="lessons"></div>
+</section>
+
+<div class="footer">FVG Learning Lab V7 Pro • Educational/research tool, not financial advice. Live TradingView widgets are provided by TradingView. TradingView charts do not themselves supply a custom external datafeed for your FVG engine; a licensed market-data source is required for fully automatic scanning of CME futures/XAUUSD. citeturn0search0turn0search2</div>
 </main>
+
 <script>
-const lessons=[
-["What is an FVG?","An FVG is a three-candle price imbalance. For a bullish example, candle 3 trades above candle 1's high, leaving a zone between them. For a bearish example, candle 3 trades below candle 1's low.","Look for the space between candle 1 and candle 3. The middle candle is usually the displacement candle."],
-["Spot the three candles","Candle 1 establishes the boundary. Candle 2 creates displacement. Candle 3 confirms that price has moved far enough to leave an imbalance.","Your job is to identify the zone—not predict what happens next."],
-["Fresh vs mitigated","A fresh FVG has not been revisited by price. A mitigated or touched FVG has been returned to. Treat this as a descriptive state, not a guarantee of reaction.","Compare a newly formed zone with one that price has already revisited."],
-["Liquidity and context","An FVG becomes more interesting to study when you can identify what price was doing before it formed: nearby highs/lows, a sweep, or a sharp displacement.","Do not use a checklist as a prediction machine. Use it to describe why two FVGs are different."],
-["Structure and higher timeframe","Study whether price broke a recent swing or changed short-term structure, then compare the setup with the higher-timeframe direction.","Always separate what the chart shows from what you expect it to do."],
-["Build your own playbook","Now combine the pieces: FVG + freshness + liquidity + structure + higher-timeframe context + defined invalidation. Test the combination repeatedly.","Your statistics come from your sample. Record setups before seeing the outcome."]
+const ASSETS=[
+ {id:'MNQ1!',tv:'CME_MINI:MNQ1!',name:'Micro E-mini Nasdaq-100',unit:'MNQ'},
+ {id:'ES1!',tv:'CME_MINI:ES1!',name:'E-mini S&P 500',unit:'ES'},
+ {id:'NQ1!',tv:'CME_MINI:NQ1!',name:'E-mini Nasdaq-100',unit:'NQ'},
+ {id:'XAUUSD',tv:'OANDA:XAUUSD',name:'Gold Spot / U.S. Dollar',unit:'Gold'}
 ];
-let bars=[],fvgs=[],lesson=0,shown=false;
-const cv=document.getElementById("chart"),ctx=cv.getContext("2d");
-function renderLessons(){let e=document.getElementById("lessons");e.innerHTML="";lessons.forEach((x,i)=>{let d=document.createElement("div");d.className="lesson "+(i===lesson?"active ":"")+(localStorage.getItem("fvgLesson"+i)?"done":"");d.innerHTML=`<b>${i+1}. ${x[0]}</b>`;d.onclick=()=>{lesson=i;render();draw()};e.appendChild(d)});let done=lessons.filter((_,i)=>localStorage.getItem("fvgLesson"+i)).length;document.getElementById("bar").style.width=(done/6*100)+"%";document.getElementById("prog").textContent=`${done} / 6 completed`}
-function render(){renderLessons();document.getElementById("lessonNo").textContent=`Lesson ${lesson+1} of 6`;document.getElementById("title").textContent=lessons[lesson][0];document.getElementById("content").innerHTML=`<p>${lessons[lesson][1]}</p><div class="box"><b>What to look for</b><br>${lessons[lesson][2]}</div>`;document.getElementById("lessonAction").textContent=lesson===5?"You are ready to start building your own playbook. Use the live candidates on the right and test them in replay.":"Click “Show me one” to see a live/historical example connected to this lesson."}
-function next(){localStorage.setItem("fvgLesson"+lesson,"1");if(lesson<5)lesson++;render();draw()}function previous(){if(lesson>0)lesson--;render();draw()}
-function showExample(){shown=true;document.getElementById("lessonAction").innerHTML=`<b>Example shown.</b> ${lesson===0?"Look for the three-candle gap.":lesson===1?"Count the candles and identify the boundary.":lesson===2?"Notice whether later candles returned to the zone.":lesson===3?"Look left for nearby highs/lows and displacement.":lesson===4?"Compare the setup with recent structure and the broader direction.":"Describe all the confluences before forming an opinion."}`;draw()}
-async function load(){status.textContent="LOADING…";try{let d=await fetch(`https://data-api.binance.vision/api/v3/klines?symbol=${symbol.value.toUpperCase()}&interval=${tf.value}&limit=300`).then(r=>r.json());bars=d.map(x=>({t:x[0],o:+x[1],h:+x[2],l:+x[3],c:+x[4]}));scan();status.textContent="DATA READY ●";renderSetups();draw()}catch(e){status.textContent="DATA ERROR"}}
-function scan(){fvgs=[];for(let i=2;i<bars.length-2;i++){let a=bars[i-2],d=bars[i];if(d.l>a.h)fvgs.push({i,type:"Bullish",low:a.h,high:d.l});if(d.h<a.l)fvgs.push({i,type:"Bearish",low:d.h,high:a.l})}fvgs=fvgs.slice(-12)}
-function renderSetups(){let e=document.getElementById("setups");e.innerHTML="";fvgs.slice().reverse().slice(0,7).forEach(f=>{let d=document.createElement("div");d.className="box";d.innerHTML=`<b>${f.type} FVG</b><br>${f.low.toFixed(2)} – ${f.high.toFixed(2)}<br><span class="muted">${new Date(bars[f.i].t).toLocaleTimeString()}</span><br><button onclick="focusSetup(${f.i})">Show in action</button>`;e.appendChild(d)})}
-function focusSetup(i){shown=true;let f=fvgs.find(x=>x.i===i);if(!f)return;document.getElementById("lessonAction").innerHTML=`<b>${f.type} FVG selected.</b><br>Zone ${f.low.toFixed(2)}–${f.high.toFixed(2)}. The chart will show the formation and surrounding candles so you can study what happened.`;draw(i)}
-function draw(focus=null){if(!bars.length)return;let end=focus?Math.min(bars.length,focus+18):bars.length,start=Math.max(0,end-120),data=bars.slice(start,end),d=devicePixelRatio||1,w=cv.clientWidth,h=cv.clientHeight;cv.width=w*d;cv.height=h*d;ctx.setTransform(d,0,0,d,0,0);ctx.clearRect(0,0,w,h);let min=Math.min(...data.map(x=>x.l)),max=Math.max(...data.map(x=>x.h)),pad=(max-min)*.05;min-=pad;max+=pad;let step=w/data.length,py=v=>h-(v-min)/(max-min)*h;ctx.strokeStyle="#1b2538";for(let i=1;i<7;i++){let y=h*i/7;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}if(focus){let f=fvgs.find(x=>x.i===focus),x=(focus-start)*step;if(f){let y=py(f.high),hh=Math.max(3,py(f.low)-y);ctx.fillStyle=f.type==="Bullish"?"rgba(57,217,160,.2)":"rgba(255,110,127,.2)";ctx.fillRect(x,y,step*2,hh);ctx.strokeStyle=f.type==="Bullish"?"#39d9a0":"#ff6e7f";ctx.strokeRect(x,y,step*2,hh)}}data.forEach((b,i)=>{let x=i*step+step/2,up=b.c>=b.o;ctx.strokeStyle=up?"#48dca7":"#ff7180";ctx.fillStyle=ctx.strokeStyle;ctx.beginPath();ctx.moveTo(x,py(b.h));ctx.lineTo(x,py(b.l));ctx.stroke();let top=py(Math.max(b.o,b.c)),bot=py(Math.min(b.o,b.c));ctx.fillRect(x-step*.28,top,step*.56,Math.max(1,bot-top))})}
-symbol=document.getElementById("symbol");tf=document.getElementById("tf");status=document.getElementById("status");symbol.onchange=load;tf.onchange=load;window.onresize=draw;render();load();
-</script></body></html>
+let selected=ASSETS[0], candles=[], replayIndex=20;
+
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(b.dataset.tab).classList.add('active')});
+
+function renderAssets(){document.getElementById('assets').innerHTML=ASSETS.map((a,i)=>`<button class="asset ${a.id===selected.id?'active':''}" onclick="selectAsset('${a.id}')"><b>${a.id}</b><small>${a.name}</small></button>`).join('')}
+function selectAsset(id){selected=ASSETS.find(a=>a.id===id);renderAssets();loadTV()}
+function loadTV(){const tf=document.getElementById('tf').value; const u='https://www.tradingview.com/widgetembed/?symbol='+encodeURIComponent(selected.tv)+'&interval='+encodeURIComponent(tf)+'&hidesidetoolbar=0&symboledit=1&saveimage=1&toolbarbg=f1f3f6&studies=[]&theme=dark&style=1&timezone=Australia%2FBrisbane&withdateranges=1&hideideas=1&hidelegend=0&hidevolume=0&allow_symbol_change=0&calendar=0&hide_top_toolbar=0&hide_bottom_toolbar=0';document.getElementById('tv').innerHTML='<iframe src="'+u+'" title="TradingView chart"></iframe>'}
+document.getElementById('tf').onchange=loadTV;document.getElementById('openChart').onclick=loadTV;renderAssets();loadTV();
+
+function risk(){let a=+document.getElementById('acct').value||0,r=+document.getElementById('risk').value||0;document.getElementById('riskAmt').textContent='$'+(a*r/100).toFixed(2)}document.getElementById('acct').oninput=risk;document.getElementById('risk').oninput=risk;
+
+function parseCSV(txt){let lines=txt.trim().split(/\\r?\\n/).filter(Boolean);if(!lines.length)return[];let head=lines[0].split(',').map(x=>x.trim().toLowerCase());let ix=n=>head.indexOf(n);let find=(names)=>{for(const n of names){let k=ix(n);if(k>=0)return k}return -1};let io=find(['open','o']),ih=find(['high','h']),il=find(['low','l']),ic=find(['close','c']),it=find(['time','timestamp','date','datetime']),iv=find(['volume','v']);return lines.slice(1).map((ln,i)=>{let p=ln.split(',');return{time:it>=0?p[it]:i,open:+p[io],high:+p[ih],low:+p[il],close:+p[ic],volume:iv>=0?+p[iv]:0}}).filter(x=>[x.open,x.high,x.low,x.close].every(Number.isFinite))}
+function makeTraining(){let a=100,b=[];for(let i=0;i<80;i++){let drift=(i%17===0?1.7:(i%11===0?-1.2:0));let o=a;let c=o+(Math.sin(i*.9)*.7)+drift;let h=Math.max(o,c)+.6+((i*7)%5)*.08;let l=Math.min(o,c)-.5-((i*3)%4)*.07;if(i===18){h+=2;c+=1.7} if(i===19){o=c;c=o+2.2;h=c+.4;l=o-.2} if(i===35){l-=2} if(i===36){c+=2.4;h=c+.3} b.push({time:i,open:o,high:h,low:l,close:c,volume:1000+i*20});a=c}return b}
+function analyze(b){let out=[];for(let i=2;i<b.length;i++){let a=b[i-2],c=b[i-1],d=b[i];let bull=a.high<d.low;let bear=a.low>d.high;let body=Math.abs(c.close-c.open);let range=c.high-c.low;let displacement=range>0&&body/range>.65;let prior=b.slice(Math.max(0,i-8),i);let hi=Math.max(...prior.map(x=>x.high)),lo=Math.min(...prior.map(x=>x.low));let sweepLow=c.low<lo&&c.close>lo;let sweepHigh=c.high>hi&&c.close<hi;let bosUp=d.close>hi,bosDn=d.close<lo;if(bull||bear){let score=50+(displacement?15:0)+((sweepLow||sweepHigh)?15:0)+((bosUp||bosDn)?10:0);out.push({i,type:bull?'Bullish':'Bearish',top:bull?d.low:a.high,bottom:bull?a.high:d.high,score,displacement,sweep:sweepLow||sweepHigh,bos:bosUp||bosDn})}}return out}
+function renderSetups(list,target){if(!list.length){document.getElementById(target).innerHTML='<p class="muted">No FVG detected in this sample.</p>';return}document.getElementById(target).innerHTML=list.slice(-6).reverse().map((s,n)=>`<div class="setup"><div class="row"><b>${s.type} FVG</b><span class="pill">${s.score}/100</span></div><div class="bar" style="margin:9px 0"><i style="width:${s.score}%"></i></div><div class="muted">Candle ${s.i+1} • ${s.displacement?'Displacement ✓':'Displacement —'} • ${s.sweep?'Liquidity sweep ✓':'Liquidity sweep —'} • ${s.bos?'BOS ✓':'BOS —'}</div><div class="row" style="margin-top:9px"><button class="btn" onclick="alert('Educational setup: ${s.type} FVG at candles ${s.i-1}-${s.i+1}. Confirm with your own checklist.')">Show setup</button><button class="btn ghost" onclick="document.getElementById('decision').value='${s.type==='Bullish'?'Long':'Short'}'">Use in replay</button></div></div>`).join('')}
+function drawChart(canvas,b,list,cut=b.length){let ctx=canvas.getContext('2d'),W=canvas.width,H=canvas.height;ctx.clearRect(0,0,W,H);let arr=b.slice(0,cut);if(!arr.length)return;let min=Math.min(...arr.map(x=>x.low)),max=Math.max(...arr.map(x=>x.high)),pad=35;let sx=(W-pad*2)/Math.max(1,arr.length-1),sy=(H-pad*2)/(max-min||1);const y=v=>H-pad-(v-min)*sy;ctx.strokeStyle='#18202c';for(let g=0;g<5;g++){let yy=pad+g*(H-pad*2)/4;ctx.beginPath();ctx.moveTo(pad,yy);ctx.lineTo(W-pad,yy);ctx.stroke()}arr.forEach((x,i)=>{let xx=pad+i*sx;ctx.strokeStyle=x.close>=x.open?'#26d69a':'#ff5d73';ctx.beginPath();ctx.moveTo(xx,y(x.high));ctx.lineTo(xx,y(x.low));ctx.stroke();ctx.fillStyle=ctx.strokeStyle;let top=Math.min(y(x.open),y(x.close)),ht=Math.max(2,Math.abs(y(x.open)-y(x.close)));ctx.fillRect(xx-3,top,6,ht)});list.filter(s=>s.i<cut).forEach(s=>{let x1=pad+(s.i-2)*sx,x2=pad+s.i*sx;ctx.fillStyle=s.type==='Bullish'?'#26d69a22':'#ff5d7322';ctx.fillRect(x1,y(s.top),Math.max(12,x2-x1),Math.abs(y(s.bottom)-y(s.top)));ctx.strokeStyle=s.type==='Bullish'?'#26d69a':'#ff5d73';ctx.strokeRect(x1,y(s.top),Math.max(12,x2-x1),Math.abs(y(s.bottom)-y(s.top)))})}
+document.getElementById('demoData').onclick=()=>{candles=makeTraining();document.getElementById('csv').value='time,open,high,low,close,volume\\n'+candles.map(x=>Object.values(x).join(',')).join('\\n');document.getElementById('engineStatus').textContent='Training dataset loaded — synthetic candles for learning only.';scan()}
+document.getElementById('scan').onclick=()=>{candles=parseCSV(document.getElementById('csv').value);scan()}
+document.getElementById('clearData').onclick=()=>{candles=[];document.getElementById('csv').value='';document.getElementById('engineStatus').textContent='No candle data loaded.';document.getElementById('engineSetups').innerHTML='';drawChart(document.getElementById('chart'),[],[])}
+function scan(){if(!candles.length){document.getElementById('engineStatus').textContent='Could not find valid OHLC rows.';return}let s=analyze(candles);document.getElementById('engineStatus').textContent=`${candles.length} candles analysed • ${s.length} FVG candidates found.`;renderSetups(s,'engineSetups');drawChart(document.getElementById('chart'),candles,s);document.getElementById('radarFvg').textContent=s.length;let last=s.at(-1);document.getElementById('radarScore').textContent=last?last.score+'/100':'—';document.getElementById('radarBos').textContent=last?(last.bos?'YES':'NO'):'—';document.getElementById('radarLiq').textContent=last?(last.sweep?'YES':'NO'):'—';document.getElementById('setups').innerHTML=s.slice(-3).reverse().map(x=>`<div class="setup"><div class="row"><b>${x.type} FVG</b><span class="pill">${x.score}/100</span></div><div class="muted">${x.displacement?'Displacement ✓':'Displacement —'} · ${x.sweep?'Sweep ✓':'Sweep —'} · ${x.bos?'BOS ✓':'BOS —'}</div></div>`).join('')}
+
+document.getElementById('startReplay').onclick=()=>{if(!candles.length){candles=makeTraining();scan()}replayIndex=20;document.getElementById('replayState').textContent='Future hidden';document.getElementById('gradeResult').innerHTML='';drawChart(document.getElementById('replayChart'),candles,analyze(candles),replayIndex)}
+document.getElementById('nextCandle').onclick=()=>{if(!candles.length)return;if(replayIndex<candles.length)replayIndex++;drawChart(document.getElementById('replayChart'),candles,analyze(candles),replayIndex)}
+document.getElementById('reveal').onclick=()=>{if(!candles.length)return;drawChart(document.getElementById('replayChart'),candles,analyze(candles),candles.length);document.getElementById('replayState').textContent='Future revealed'}
+document.getElementById('grade').onclick=()=>{let d=document.getElementById('decision').value;let e=+document.getElementById('entry').value,sl=+document.getElementById('sl').value,tp=+document.getElementById('tp').value;document.getElementById('gradeResult').innerHTML=`<div class="setup"><b>${d}</b><p class="muted">Decision recorded. Setups are graded by the checklist and eventual path, not by hindsight.</p>${e&&sl&&tp?`<span class="pill">Entry ${e} · SL ${sl} · TP ${tp}</span>`:''}</div>`}
+
+function loadJournal(){let j=JSON.parse(localStorage.getItem('fvgJournal')||'[]');document.getElementById('journalRows').innerHTML=j.map(x=>`<tr><td>${x.date}</td><td>${x.sym}</td><td>${x.tf}</td><td>${x.side}</td><td class="${x.r>=0?'green':'red'}">${x.r}</td><td>${x.note||''}</td></tr>`).join('')}
+document.getElementById('addJournal').onclick=()=>{let j=JSON.parse(localStorage.getItem('fvgJournal')||'[]');j.push({date:new Date().toLocaleDateString(),sym:document.getElementById('jSymbol').value,tf:document.getElementById('jTf').value,side:document.getElementById('jSide').value,r:+document.getElementById('jR').value||0,note:document.getElementById('jNote').value});localStorage.setItem('fvgJournal',JSON.stringify(j));loadJournal()};loadJournal();
+
+const lessons=[
+['1','What is an FVG?','Learn the three-candle imbalance and why the middle candle matters.'],
+['2','Spot the three candles','Identify the exact high/low relationship that creates a bullish or bearish gap.'],
+['3','Fresh vs mitigated','A fresh gap has not been meaningfully traded back through; mitigation changes the setup context.'],
+['4','Liquidity + displacement','Look for a sweep of a prior high/low and decisive displacement before treating an FVG as actionable.'],
+['5','Structure + higher timeframe','Use BOS/structure and higher-timeframe direction as context rather than a standalone signal.'],
+['6','Build your playbook','Define entry, invalidation, target, risk and the exact conditions that make you skip a trade.']
+];document.getElementById('lessons').innerHTML=lessons.map(l=>`<div class="card" style="margin:10px 0"><div class="row"><span class="pill">${l[0]}</span><h3 style="margin:0">${l[1]}</h3></div><p class="muted">${l[2]}</p><label class="check"><input type="checkbox" onchange="localStorage.setItem('lesson${l[0]}',this.checked)"> Mark lesson complete</label></div>`).join('');
+lessons.forEach(l=>{let e=document.querySelector(`#lessons input[onchange*="lesson${l[0]}"]`);if(e)e.checked=localStorage.getItem('lesson'+l[0])==='true'})
+risk();
+</script>
+</body>
+</html>
